@@ -42,7 +42,7 @@ def csv_export(data: np.array, path: pathlib.Path, name: str) -> None:
     :param path: path to be exported
     :param name: name of the file
     """
-    pd.Series(data).to_csv(path / name)
+    pd.Series(data).to_csv(path / name, index=False)
     
 
 def apply_metrics(peaks: np.array) -> pd.DataFrame:
