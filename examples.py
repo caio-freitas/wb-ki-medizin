@@ -21,7 +21,7 @@ def process_training_set():
             csv_export(rr_peaks, save_dir, data.stem + ".csv")
         
 
-    def process_features():
+def process_features():
     """Calculate features for csv files and return it into a final csv
     """
     repo_dir = pathlib.Path(__file__).parent
@@ -31,15 +31,14 @@ def process_training_set():
 
     for data in rr_dir.iterdir():
         d = pd.read_csv(data).to_numpy()
-        print(d)
         try:
-        df = pd.concat([df, apply_metrics(d)])
+            df = pd.concat([df, apply_metrics(d)])
         except Exception as e:
-        print(e)
+            print(e)
 
     df.to_csv("features.csv")
 
 
 if __name__ == '__main__':
-    # process_training_set()
-    process_features()
+    process_training_set()
+    # process_features()
