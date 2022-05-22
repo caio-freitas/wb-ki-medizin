@@ -33,6 +33,20 @@ def rr_peaks_from_ecg_signal(ecg_signal: pd.Series) -> np.array:
     r_peaks = detectors.hamilton_detector(ecg_signal) # RR distance detection
     
     rr = np.diff(r_peaks) / fs * 1000
+    
+    
+    
+def normalize(ecg_signal: np.array) -> np.array:
+    """"Normalice de an ECG
+        Introducing a vector of the electrocardigrom
+        and it retuns the vector normalizated
+
+    """
+    avg, dev = ecg_signal.mean(), ecg_signal.std()
+    print(avg)
+    print(dev)
+    return  (ecg_signal-avg)/ dev
+
     return rr
 
 
