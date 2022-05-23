@@ -83,12 +83,16 @@ def process_all_ecg() -> pd.DataFrame:
 
     # applying functions in all files
     for filename in training_dir.iterdir():
+        print(f"Processing: {filename.name}...")
         if filename.suffix == ".mat":
             ecg_signal = load_ecg(filename.name)
             target = get_target(filename.stem)
-            processed_data = pipeline(ecg_signal).append(target)
-            data.append(processed_data)
-            print(f"Processing: {filename.name}...")
+            try:
+                processed_data = np.append(pipeline(ecg_signal), target)
+                data.append(processed_data)
+            except Exception as e:
+                print(e)
+                continue
 
     return np.array(data)
 
@@ -96,10 +100,14 @@ def process_one_ecg():
     ecg_signal = load_ecg("train_ecg_00001.mat")
 
     data = pipeline(ecg_signal)
-    csv_export(data)
+    csv_export(data, "")
 
 
 if __name__ == "__main__":
     data = process_all_ecg()
-    csv_export(data)
+    csv_export(
+        data=data, 
+        path=pathlib.Path(__file__).parent, 
+        name="features.csv"
+    )
     
