@@ -33,7 +33,7 @@ def rr_peaks_from_ecg_signal(ecg_signal: pd.Series) -> np.array:
     r_peaks = detectors.hamilton_detector(ecg_signal) # RR distance detection
     
     rr = np.diff(r_peaks) / fs * 1000
-    
+    return rr
     
     
 def normalize(ecg_signal: np.array) -> np.array:
@@ -43,11 +43,7 @@ def normalize(ecg_signal: np.array) -> np.array:
 
     """
     avg, dev = ecg_signal.mean(), ecg_signal.std()
-    print(avg)
-    print(dev)
-    return  (ecg_signal-avg)/ dev
-
-    return rr
+    return  (ecg_signal - avg) / dev
 
 
 def get_target(filenamestem: str):
@@ -55,6 +51,7 @@ def get_target(filenamestem: str):
     training_dir = repo_dir / "training/"
     reference_df = pd.read_csv(training_dir / "REFERENCE.csv", names=["filename", "label"])
     return reference_df[reference_df["filename"] == filenamestem]["label"].values[0]
+
 
 def csv_export(data: np.array, path: pathlib.Path, name: str) -> None:
     """Export numpy array as CSV
@@ -65,7 +62,7 @@ def csv_export(data: np.array, path: pathlib.Path, name: str) -> None:
     new_name = (get_target(name[:-4]) + "_" + name)
     pd.Series(data).to_csv(path / new_name, index=False)
     
-
+    
 def apply_metrics(peaks: np.array) -> pd.DataFrame:
     """Given the RR peaks array, returns a DataFrame
     with all features of interess
