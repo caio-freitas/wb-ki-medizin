@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 from ecgdetectors import Detectors
 from pyhrv.time_domain import sdnn, sdann, nn50, sdsd, tinn, rmssd
-from utils import load_ecg, csv_export
+from utils import load_ecg, csv_export, get_target
 
 def rr_peaks_from_ecg_signal(ecg_signal: pd.Series) -> np.array:
     """Given an ECG signal function gets the RR peaks
@@ -75,20 +75,22 @@ def process_all_ecg() -> pd.DataFrame:
     """Load and transform data using Pipeline functions
     :returns: table which each line corresponds to one ECG signal and each column one metric of the signal
     """
-    features = []
+    data = []
 
     # getting paths
     repo_dir = pathlib.Path(__file__).parent
     training_dir = repo_dir / "training/"
 
     # applying functions in all files
-    for data in training_dir.iterdir():
-        if data.suffix == ".mat":
-            ecg_signal = load_ecg(data.name)
-            features.append(pipeline(ecg_signal))
-            print(f"Processing: {data.name}...")
+    for filename in training_dir.iterdir():
+        if filename.suffix == ".mat":
+            ecg_signal = load_ecg(filename.name)
+            target = get_target(filename.stem)
+            processed_data = pipeline(ecg_signal).append(target)
+            data.append(processed_data)
+            print(f"Processing: {filename.name}...")
 
-    return np.array(features)
+    return np.array(data)
 
 def process_one_ecg():
     ecg_signal = load_ecg("train_ecg_00001.mat")
