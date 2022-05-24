@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 from ecgdetectors import Detectors
 from pyhrv.time_domain import sdnn, sdann, nn50, sdsd, tinn, rmssd
+from pyhrv.tools import heart_rate
 from utils import load_ecg, csv_export, get_target
 
 def rr_peaks_from_ecg_signal(ecg_signal: pd.Series) -> np.array:
@@ -33,15 +34,20 @@ def apply_metrics(peaks: np.array) -> pd.DataFrame:
     """Given the RR peaks array, returns a DataFrame
     with all features of interess
     
+    * heart_rate: Heart rate
     * SDNN: Standard deviation of RR intervals series
     * SDANN: Standard deviation of the mean of RR intervals in 5-min segments
     * pNN50: Proportion of adjacent RR intervals differing by more than 50 ms
     * SDSD: Standard deviation of differences between adjacent RR intervals
     * TINN: Baseline width of the triangular interpolation of the intervals histogram
     * r-MSSD: The square root of the mean of the squares of differences between adjacent RR intervals
+
+    **** add/remove new metrics also in csv_export() at utils.py
+
     """
     
     return np.array([
+        heart_rate(peaks)["rate"],
         sdnn(peaks)["sdnn"],
         #sdann(peaks)["sdann"], # warnings.warn("Signal duration too short for SDANN computation.")
         nn50(peaks)["nn50"],
