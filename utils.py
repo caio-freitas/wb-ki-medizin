@@ -63,7 +63,7 @@ def csv_export(data: np.array, path: pathlib.Path, name: str) -> None:
     pd.Series(data).to_csv(path / new_name, index=False)
     
     
-def apply_metrics(peaks: np.array) -> pd.DataFrame:
+def apply_metrics(peaks: np.array, target: str) -> pd.DataFrame:
     """Given the RR peaks array, returns a DataFrame
     with all features of interess
     
@@ -81,5 +81,6 @@ def apply_metrics(peaks: np.array) -> pd.DataFrame:
         "NN50": sdnn(peaks),
         "SDSD": sdnn(peaks),
         "TINN": sdnn(peaks),
-        "r-MSSD": rmssd(peaks)
+        "r-MSSD": rmssd(peaks),
+        "target": target
     })
