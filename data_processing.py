@@ -1,9 +1,12 @@
 import pathlib
 import numpy as np
 import pandas as pd
+
 from ecgdetectors import Detectors
 from pyhrv.time_domain import sdnn, sdann, nn50, sdsd, tinn, rmssd
 from pyhrv.tools import heart_rate
+from heartpy import remove_baseline_wander
+
 from utils import load_ecg, csv_export, get_target
 
 def rr_peaks_from_ecg_signal(ecg_signal: pd.Series) -> np.array:
@@ -66,7 +69,7 @@ def pipeline(ecg_signal: np.array) -> np.array:
     normalized_ecg = normalize(ecg_signal)
 
     # remove noise
-    #ohne_noise_ecg = remove_noise(normalized_ecg)
+    #ohne_noise_ecg = remove_baseline_wander(normalized_ecg, sample_rate=300, cutoff=0.05)
     
     # TODO remove artifacts
 
@@ -116,6 +119,7 @@ if __name__ == "__main__":
     csv_export(
         data=data, 
         path=pathlib.Path(__file__).parent, 
-        name="features.csv"
+        name="features.csv",
+        columns=["min_rate", "avg_rate", "max_rate", "sdnn", "nn50", "sdsd", "rmssd", "label"]
     )
     
