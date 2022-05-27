@@ -49,6 +49,7 @@ def apply_metrics(peaks: np.array) -> pd.DataFrame:
     return np.array([
         heart_rate(peaks).min(),
         heart_rate(peaks).mean(),
+        heart_rate(peaks).std(),
         heart_rate(peaks).max(),
         sdnn(peaks)["sdnn"],
         #sdann(peaks)["sdann"], # warnings.warn("Signal duration too short for SDANN computation.")
