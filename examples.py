@@ -32,7 +32,7 @@ def process_features():
     for data in rr_dir.iterdir():
         d = pd.read_csv(data).to_numpy()
         try:
-            df = pd.concat([df, apply_metrics(d)])
+            df = pd.concat([df, apply_metrics(d, data.stem[0])])
         except Exception as e:
             print(e)
 
@@ -40,5 +40,5 @@ def process_features():
 
 
 if __name__ == '__main__':
-    process_training_set()
-    # process_features()
+    # process_training_set()
+    process_features()
