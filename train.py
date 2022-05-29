@@ -5,7 +5,7 @@ import pandas as pd
 from regex import R
 from data_processing import process_all_ecg
 from lightgbm import LGBMClassifier
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.metrics import f1_score
 from utils import csv_export
 
@@ -24,7 +24,7 @@ def main():
     #     path=pathlib.Path(__file__).parent, 
     #     name="features.csv"
     # )
-
+    
     # Read resulting dataframe
     df = pd.read_csv("features.csv")
     df.head()
@@ -51,6 +51,13 @@ def main():
     joblib.dump(model, model_filename)
 
     print("Saved model  {}".format(model_filename))
+
+    scores = cross_val_score(model,df[['min_rate', 'avg_rate', 'max_rate', 'sdnn', 'nn50', 'sdsd', 'rmssd']],
+                            df[["label"]],
+                            cv=5,
+                            scoring='f1_weighted')
+    print("Cross Validation Scores: {}".format(scores))
+    print("{} accuracy with a standard deviation of {}".format(scores.mean(), scores.std()))
 
 if __name__ == "__main__":
     main()
