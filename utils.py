@@ -2,22 +2,17 @@ import pandas as pd
 import numpy as np
 import pathlib
 from scipy.io import loadmat
+from typing import List
 
-def load_ecg(filename: str) -> pd.Series:
+def load_ecg(filepath: pathlib.Path) -> pd.Series:
     """Function to load ECG signal as pandas Series
-    :param filename: name of the ECG signal file
+    :param filepath: papth of the ECG signal file
     :return: ECG signal as Series
     """
-    # get path of the training/ directory
-    repo_path = pathlib.Path(__file__).parent
-    training_set_path = repo_path / "training/"
-    ecg = pd.Series(loadmat(training_set_path / filename)["val"][0])
-    try: 
-        ecg = pd.Series(loadmat(training_set_path / filename)["val"][0])
-    except Exception as e:
-        print(e)
 
+    ecg = pd.Series(loadmat(filepath)["val"][0])
     return ecg
+
 
 def get_target(filenamestem: str):
     repo_dir = pathlib.Path(__file__).parent
@@ -26,14 +21,14 @@ def get_target(filenamestem: str):
     return reference_df[reference_df["filename"] == filenamestem]["label"].values[0]
 
 
-def csv_export(data: np.array, path: pathlib.Path = None, name: str = None) -> None:
+def csv_export(data: np.array, path: pathlib.Path = None, name: str = None, cols: List[str] = None) -> None:
     """Export numpy array as CSV
     :param data: array to be exported
     :param path: path to be exported
     :param name: name of the file
     """
     
-    df = pd.DataFrame(data, columns=["min_rate", "avg_rate", "std_rate","max_rate", "sdnn", "nn50", "sdsd", "rmssd", "low_freq_power_perc", "high_freq_power_perc", "freq_power_ratio", "label"])
+    df = pd.DataFrame(data, columns=cols)
     df.to_csv(path / name, index=False)
     # new_name = (get_target(name[:-4]) + "_" + name)
     # pd.Series(data).to_csv(path / new_name, index=False)

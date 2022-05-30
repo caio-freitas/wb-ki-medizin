@@ -2,38 +2,34 @@ import sys
 import joblib
 import pathlib
 import pandas as pd
-from regex import R
-from data_processing import process_all_ecg
-from lightgbm import LGBMClassifier
+
 from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.metrics import f1_score
+from lightgbm import LGBMClassifier
+
+from preprocessing import process_all_ecg
+from preprocessing.metrics import feature_names, col_names
 from utils import csv_export
+
 
 def main():
     
-    if len(sys.argv) > 1:
-        model_filename = sys.argv[1]
-        if len(sys.argv) > 2:
-            return
-    else: 
-        model_filename = 'lgbm.pkl'
+    model_filename = 'lgbm.pkl'
     # Runs data pipeline
-    # data = process_all_ecg()
-    # csv_export(
-    #     data=data, 
-    #     path=pathlib.Path(__file__).parent, 
-    #     name="features.csv"
-    # )
+    if not (pathlib.Path(__file__).parent / "features.csv").exists():
+        data = process_all_ecg()
+        csv_export(
+            data=data, 
+            path=pathlib.Path(__file__).parent, 
+            name="features.csv",
+            cols=col_names
+        )
     
     # Read resulting dataframe
     df = pd.read_csv("features.csv")
-    df.head()
-    df = df[df["label"] != "~"]
 
-
-    X_train, X_test, y_train, y_test = train_test_split(df[['min_rate', 'avg_rate', 'max_rate', 'sdnn', 'nn50', 'sdsd', 'rmssd']],
-                                                        df[["label"]])
-    print("Dataset splitted: {} training samples | {} test samples".format(X_train.size, X_test.size))
+    y_train = df["label"]
+    X_train = df.drop(["label"], axis=1)
 
     model = LGBMClassifier(
         metric="multi_logloss",
@@ -42,22 +38,9 @@ def main():
 
     model.fit(X_train, y_train)
 
-    y_pred = model.predict(X_test)
-
-    score = f1_score(y_test, y_pred, average="weighted")
-
-    print("Final model score: {}".format(score))
-
     joblib.dump(model, model_filename)
 
-    print("Saved model  {}".format(model_filename))
-
-    scores = cross_val_score(model,df[['min_rate', 'avg_rate', 'max_rate', 'sdnn', 'nn50', 'sdsd', 'rmssd']],
-                            df[["label"]],
-                            cv=5,
-                            scoring='f1_weighted')
-    print("Cross Validation Scores: {}".format(scores))
-    print("{} accuracy with a standard deviation of {}".format(scores.mean(), scores.std()))
+    print(f"Saved model {model_filename}")
 
 if __name__ == "__main__":
     main()
