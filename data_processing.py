@@ -1,7 +1,7 @@
 import pathlib
 import numpy as np
 import pandas as pd
-from ecgdetectors import Detectors
+from biosppy.signals import ecg
 from pyhrv.time_domain import sdnn, sdann, nn50, sdsd, tinn, rmssd
 from pyhrv.tools import heart_rate
 from utils import load_ecg, csv_export, get_target
@@ -9,14 +9,12 @@ from utils import load_ecg, csv_export, get_target
 def rr_peaks_from_ecg_signal(ecg_signal: pd.Series) -> np.array:
     """Given an ECG signal function gets the RR peaks
     :param ecg_signal: ECG signal
-    :return: array with peak positions ??? TODO verify that
+    :return: array with peak positions
     """
-    fs = 300 # Sampling frequency
-    detectors = Detectors(fs)
+    fs = 300 # Sampling frequency (Hz)
+    signal, r_peaks = ecg.ecg(ecg_signal, show=False, sampling_rate=300)[1:3]
 
-    r_peaks = detectors.hamilton_detector(ecg_signal) # RR distance detection
-    
-    rr = np.diff(r_peaks) / fs * 1000
+    rr = np.diff(r_peaks / 1000) # in seconds
     return rr
 
 
