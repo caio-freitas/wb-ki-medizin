@@ -5,6 +5,7 @@ from ecgdetectors import Detectors
 from pyhrv.time_domain import sdnn, sdann, nn50, sdsd, tinn, rmssd
 from pyhrv.tools import heart_rate
 from utils import load_ecg, csv_export, get_target
+from filtering import apply_filter
 
 def rr_peaks_from_ecg_signal(ecg_signal: pd.Series) -> np.array:
     """Given an ECG signal function gets the RR peaks
@@ -66,12 +67,12 @@ def pipeline(ecg_signal: np.array) -> np.array:
     normalized_ecg = normalize(ecg_signal)
 
     # remove noise
-    #ohne_noise_ecg = remove_noise(normalized_ecg)
+    denoised_ecg = apply_filter(normalized_ecg)
     
     # TODO remove artifacts
 
     # extract rr peaks
-    rr_peaks = rr_peaks_from_ecg_signal(normalized_ecg)
+    rr_peaks = rr_peaks_from_ecg_signal(denoised_ecg)
 
     # extract metrics
     metrics = apply_metrics(rr_peaks)
