@@ -93,7 +93,7 @@ def pipeline(ecg_signal: np.array) -> np.array:
     rr_peaks = rr_peaks_from_ecg_signal(denoised_ecg)
 
     # extract metrics
-    metrics = apply_metrics(rr_peaks, normalized_ecg)
+    metrics = apply_metrics(rr_peaks, denoised_ecg)
 
     return metrics
 
