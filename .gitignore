@@ -1,6 +1,6 @@
 # Specific to this project
-rr_training/
 training/
+test/
 features.csv
 predictions.csv
 lgbm.pkl
