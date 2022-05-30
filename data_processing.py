@@ -1,3 +1,4 @@
+import scipy
 import pathlib
 import numpy as np
 import pandas as pd
@@ -27,8 +28,23 @@ def normalize(ecg_signal: np.array) -> np.array:
     avg, dev = ecg_signal.mean(), ecg_signal.std()
     return  (ecg_signal - avg) / dev
 
+def spectral_powers(signal: np.array, LF: np.array = [0.05, 0.15], HF: np.array = [0.15, 0.4]):
+    psd_f, psd = scipy.signal.welch(signal) # power spectral density
 
-def apply_metrics(peaks: np.array) -> pd.DataFrame:
+    psd_f_lf = psd_f[(psd_f > LF[0]) & (psd_f <= LF[1])]
+    psd_lf = psd[(psd_f > LF[0]) & (psd_f <= LF[1])]
+    
+    psd_f_hf = psd_f[(psd_f > HF[0]) & (psd_f <= HF[1])]
+    psd_hf = psd[(psd_f > HF[0]) & (psd_f <= HF[1])]
+
+    total_power = np.trapz(psd, psd_f)
+
+    LF_power = np.trapz(psd_lf, psd_f_lf) # low frequency band
+    HF_power = np.trapz(psd_hf, psd_f_hf) # high frequency band
+
+    return LF_power/total_power, HF_power/total_power, LF_power/HF_power
+
+def apply_metrics(peaks: np.array, signal: np.array) -> pd.DataFrame:
     """Given the RR peaks array, returns a DataFrame
     with all features of interess
     
@@ -43,7 +59,7 @@ def apply_metrics(peaks: np.array) -> pd.DataFrame:
     **** add/remove new metrics also in csv_export() at utils.py
 
     """
-    
+    [LF_power, HF_power, ratio] = spectral_powers(signal)
     return np.array([
         heart_rate(peaks).min(),
         heart_rate(peaks).mean(),
@@ -54,7 +70,10 @@ def apply_metrics(peaks: np.array) -> pd.DataFrame:
         nn50(peaks)["nn50"],
         sdsd(peaks)["sdsd"],
         #tinn(peaks, plot=False)["tinn"], # warnings.warn('CAUTION: The TINN computation is currently providing incorrect results in the most cases due to a 
-        rmssd(peaks)["rmssd"]
+        rmssd(peaks)["rmssd"],
+        LF_power,
+        HF_power,
+        ratio
     ])
 
 
@@ -73,7 +92,7 @@ def pipeline(ecg_signal: np.array) -> np.array:
     rr_peaks = rr_peaks_from_ecg_signal(normalized_ecg)
 
     # extract metrics
-    metrics = apply_metrics(rr_peaks)
+    metrics = apply_metrics(rr_peaks, normalized_ecg)
 
     return metrics
 
