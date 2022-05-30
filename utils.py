@@ -32,7 +32,9 @@ def csv_export(data: np.array, path: pathlib.Path = None, name: str = None) -> N
     :param path: path to be exported
     :param name: name of the file
     """
-    df = pd.DataFrame(data, columns=["min_rate", "avg_rate", "max_rate", "sdnn", "nn50", "sdsd", "rmssd", "label"])
+    
+    df = pd.DataFrame(data, columns=["min_rate", "avg_rate", "std_rate","max_rate", "sdnn", "nn50", "sdsd", "rmssd", "label"])
     df.to_csv(path / name, index=False)
     # new_name = (get_target(name[:-4]) + "_" + name)
-    # pd.Series(data).to_csv(path / new_name, index=False
+    # pd.Series(data).to_csv(path / new_name, index=False)
+
