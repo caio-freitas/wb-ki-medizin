@@ -1,9 +1,11 @@
 # Specific to this project
-rr_training/
 training/
+test/
 features.csv
 predictions.csv
-lgbm.pkl
+PREDICTIONS.csv
+international_CO1_binary.pkl
+international_CO1.pkl
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

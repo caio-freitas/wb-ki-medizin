@@ -1,72 +1,89 @@
-import sys
-import joblib
 import pathlib
+import joblib
 import pandas as pd
-from regex import R
-from data_processing import process_all_ecg
+
 from lightgbm import LGBMClassifier
-from sklearn.model_selection import train_test_split, cross_val_score
-from sklearn.metrics import f1_score
-from utils import csv_export
 
-def main():
-    
-    if len(sys.argv) > 1:
-        model_filename = sys.argv[1]
-        if len(sys.argv) > 2:
-            return
-    else: 
-        model_filename = 'lgbm.pkl'
-    # Runs data pipeline
-    # data = process_all_ecg()
-    # csv_export(
-    #     data=data, 
-    #     path=pathlib.Path(__file__).parent, 
-    #     name="features.csv"
-    # )
-    
-    # Read resulting dataframe
-    df = pd.read_csv("features.csv")
-    df.head()
-    df = df[df["label"] != "~"]
+from preprocessing import pipeline
+from preprocessing.metrics import feature_names
+from wettbewerb import load_references
+
+# TODO 
+    # why is not processing train_ecg_05610?
+    # Invalid data type. Please provide data in int, float, list or numpy array format.
 
 
-    X_train, X_test, y_train, y_test = train_test_split(df[['min_rate',
-                                                            'avg_rate',
-                                                            'max_rate',
-                                                            'sdnn',
-                                                            'nn50',
-                                                            'sdsd',
-                                                            'rmssd',
-                                                            'low_freq_power_perc',
-                                                            'high_freq_power_perc',
-                                                            'freq_power_ratio']],
-                                                        df[["label"]])
-    print("Dataset splitted: {} training samples | {} test samples".format(X_train.size, X_test.size))
+def process_training_set() -> pd.DataFrame:
+
+    ecg_leads, ecg_labels, fs, ecg_names = load_references() # Importiere EKG-Dateien, zugehörige Diagnose, Sampling-Frequenz (Hz) und Name 
+    features = []
+    labels = []
+
+    for idx, ecg_lead in enumerate(ecg_leads):
+        print(f"Processing {ecg_names[idx]}...")
+        try:
+            feature = pipeline(ecg_lead, fs)
+            features.append(feature)
+
+            label = ecg_labels[idx]
+            labels.append(label)
+        except Exception as e:
+            print(e)
+
+    df = pd.DataFrame(features, columns=feature_names)
+    s = pd.Series(labels, name="label")
+    df = pd.concat([df, s], axis=1)
+
+    return df
+
+def train_multilabel(df: pd.DataFrame) -> None:
+
+    model_name = 'international_CO1.pkl'
+
+    y_train = df[['label']]
+    X_train = df.drop("label", axis=1)
 
     model = LGBMClassifier(
         metric="multi_logloss",
         num_leaves=32
     )
+    
+    train(X_train, y_train, model, model_name)
 
+    print(f"Saved model {model_name}")
+
+def train_binary(df: pd.DataFrame) -> None:
+    model_name = 'international_CO1_binary.pkl'
+
+    df_b = df[(df['label'] != '~') & (df['label'] != 'O')]
+    y_train = df_b[['label']]
+    X_train = df_b.drop("label", axis=1)
+
+    model = LGBMClassifier(
+        metric="binary_logloss",
+        num_leaves=32
+    )
+
+    train(X_train, y_train, model, model_name)
+    print(f"Saved model {model_name}")
+    
+
+def train(X_train, y_train, model, model_name):
     model.fit(X_train, y_train)
 
-    y_pred = model.predict(X_test)
+    joblib.dump(model, model_name)
 
-    score = f1_score(y_test, y_pred, average="weighted")
 
-    print("Final model score: {}".format(score))
+def main():
+    if not (pathlib.Path(__file__).parent / "features.csv").exists():
+        df = process_training_set()
+        df.to_csv("features.csv", index=False)
+    else:
+        df = pd.read_csv("features.csv")
 
-    joblib.dump(model, model_filename)
-
-    print("Saved model  {}".format(model_filename))
-
-    scores = cross_val_score(model,df[['min_rate', 'avg_rate', 'max_rate', 'sdnn', 'nn50', 'sdsd', 'rmssd']],
-                            df[["label"]],
-                            cv=5,
-                            scoring='f1_weighted')
-    print("Cross Validation Scores: {}".format(scores))
-    print("{} accuracy with a standard deviation of {}".format(scores.mean(), scores.std()))
+    train_binary(df)
+    train_multilabel(df)
+    
 
 if __name__ == "__main__":
     main()
