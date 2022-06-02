@@ -38,7 +38,7 @@ def process_training_set() -> pd.DataFrame:
 
 def train_multilabel(df: pd.DataFrame) -> None:
 
-    model_name = 'internation_CO1.pkl'
+    model_name = 'international_CO1.pkl'
 
     y_train = df[['label']]
     X_train = df.drop("label", axis=1)
@@ -53,7 +53,7 @@ def train_multilabel(df: pd.DataFrame) -> None:
     print(f"Saved model {model_name}")
 
 def train_binary(df: pd.DataFrame) -> None:
-    model_name = 'internation_CO1_binary.pkl'
+    model_name = 'international_CO1_binary.pkl'
 
     df_b = df[(df['label'] != '~') & (df['label'] != 'O')]
     y_train = df_b[['label']]

@@ -8,7 +8,7 @@ def predict_labels(
     ecg_leads : List[np.ndarray], 
     fs : float, 
     ecg_names : List[str], 
-    model_name : str='internation_CO1',
+    model_name : str='international_CO1',
     is_binary_classifier : bool=False) -> List[Tuple[str,str]]:
     '''
     Parameters
