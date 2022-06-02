@@ -3,7 +3,9 @@ training/
 test/
 features.csv
 predictions.csv
-lgbm.pkl
+PREDICTIONS.csv
+internation_CO1_binary.pkl
+internation_CO1.pkl
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

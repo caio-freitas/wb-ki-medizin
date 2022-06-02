@@ -5,14 +5,16 @@ from biosppy.signals import ecg
 from utils import load_ecg, get_target
 from .filtering import apply_filter
 from .metrics import apply_metrics
+from typing import Union
 
-def rr_peaks_from_ecg_signal(ecg_signal: pd.Series) -> np.array:
+def rr_peaks_from_ecg_signal(ecg_signal: pd.Series, sampling_freq=300) -> np.array:
     """Given an ECG signal function gets the RR peaks
     :param ecg_signal: ECG signal
+    :param sampling_freq: sampling frequency
     :return: array with peak positions
     """
     fs = 300 # Sampling frequency (Hz)
-    signal, r_peaks = ecg.ecg(ecg_signal, show=False, sampling_rate=300)[1:3]
+    signal, r_peaks = ecg.ecg(ecg_signal, show=False, sampling_rate=sampling_freq)[1:3]
 
     rr = np.diff(r_peaks / 1000) # in seconds
     return rr
@@ -28,8 +30,11 @@ def normalize(ecg_signal: np.array) -> np.array:
     return  (ecg_signal - avg) / dev
 
 
-def pipeline(ecg_signal: np.array) -> np.array:
+def pipeline(ecg_signal: np.array, sampling_freq: Union[int, float] = 300) -> np.array:
     """Process an ECG Signal
+    :param ecg_signal: Electrocardiogram Signal
+    :param sampling_freq: Sampling frequency
+    :return: array with features of processed signal
     """
     # normalize data
     normalized_ecg = normalize(ecg_signal)
@@ -40,7 +45,7 @@ def pipeline(ecg_signal: np.array) -> np.array:
     # TODO remove artifacts
 
     # extract rr peaks
-    rr_peaks = rr_peaks_from_ecg_signal(denoised_ecg)
+    rr_peaks = rr_peaks_from_ecg_signal(denoised_ecg, sampling_freq)
 
     # extract metrics
     metrics = apply_metrics(rr_peaks, normalized_ecg)
