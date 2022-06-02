@@ -31,7 +31,16 @@ def main():
     df = df[df["label"] != "~"]
 
 
-    X_train, X_test, y_train, y_test = train_test_split(df[['min_rate', 'avg_rate', 'max_rate', 'sdnn', 'nn50', 'sdsd', 'rmssd']],
+    X_train, X_test, y_train, y_test = train_test_split(df[['min_rate',
+                                                            'avg_rate',
+                                                            'max_rate',
+                                                            'sdnn',
+                                                            'nn50',
+                                                            'sdsd',
+                                                            'rmssd',
+                                                            'low_freq_power_perc',
+                                                            'high_freq_power_perc',
+                                                            'freq_power_ratio']],
                                                         df[["label"]])
     print("Dataset splitted: {} training samples | {} test samples".format(X_train.size, X_test.size))
 
