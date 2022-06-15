@@ -6,7 +6,7 @@ from biosppy.signals import ecg
 from pyhrv.time_domain import sdnn, sdann, nn50, sdsd, tinn, rmssd
 from pyhrv.tools import heart_rate
 from utils import load_ecg, csv_export, get_target
-from filtering import apply_filter
+from preprocessing.filtering import apply_filter
 
 def rr_peaks_from_ecg_signal(ecg_signal: pd.Series) -> np.array:
     """Given an ECG signal function gets the RR peaks
