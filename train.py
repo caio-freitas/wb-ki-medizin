@@ -17,7 +17,7 @@ import logging
 # Create and configure logger
 logging.basicConfig(filename="logfile.log",
                     format='%(asctime)s %(message)s',
-                    filemode='w+')
+                    filemode='w')
  
 # Creating an object
 logger = logging.getLogger("meu_log")
