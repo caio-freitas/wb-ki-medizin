@@ -6,6 +6,7 @@ predictions.csv
 PREDICTIONS.csv
 international_CO1_binary.pkl
 international_CO1.pkl
+logfile.log
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
