@@ -88,7 +88,7 @@ def process_all_ecg() -> pd.DataFrame:
                 processed_data = np.append(pipeline(ecg_signal), target)
                 data.append(processed_data)
             except Exception as e:
-                logging.debug(e)
+                logger.debug(e)
                 continue
 
     return np.array(data)
