@@ -4,6 +4,9 @@ import pandas as pd
 from pyhrv.time_domain import sdnn, sdann, nn50, sdsd, tinn, rmssd
 from pyhrv.tools import heart_rate
 
+import logging
+logger = logging.getLogger("meu_log")
+
 feature_names = [
     "min_rate", 
     "avg_rate", 
@@ -51,12 +54,24 @@ def apply_metrics(peaks: np.array, signal: np.array) -> pd.DataFrame:
     **** add/remove new metrics also in csv_export() at utils.py
 
     """
-    [LF_power, HF_power, ratio] = spectral_powers(signal)
+    try:
+        hrp = heart_rate(peaks)
+    except Exception as e:
+        logger.debug("Cannot calculate Heart rate\nError: {e}")
+        hrp = np.array([0])
+
+    try:
+        [LF_power, HF_power, ratio] = spectral_powers(signal)
+    except Exception as e:
+        logger.debug("Cannot calculate Spectral Powers\nError: {e}")
+        [LF_power, HF_power, ratio] = [0, 0, 0]
+
+
     return np.array([
-        heart_rate(peaks).min(),
-        heart_rate(peaks).mean(),
-        heart_rate(peaks).std(),
-        heart_rate(peaks).max(),
+        hrp.min(),
+        hrp.mean(),
+        hrp.std(),
+        hrp.max(),
         sdnn(peaks)["sdnn"],
         #sdann(peaks)["sdann"], # warnings.warn("Signal duration too short for SDANN computation.")
         nn50(peaks)["nn50"],

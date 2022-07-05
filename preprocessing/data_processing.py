@@ -8,6 +8,10 @@ from .metrics import apply_metrics
 from typing import Union
 from scipy.io import savemat
 
+import logging
+# Create and configure logger
+logger = logging.getLogger("meu_log")
+
 def rr_peaks_from_ecg_signal(ecg_signal: pd.Series, sampling_freq=300) -> np.array:
     """Given an ECG signal function gets the RR peaks
     :param ecg_signal: ECG signal
@@ -51,15 +55,27 @@ def pipeline(ecg_signal: np.array, sampling_freq: Union[int, float] = 300) -> np
     :return: array with features of processed signal
     """
     # normalize data
-    normalized_ecg = normalize(ecg_signal)
+    try:
+        normalized_ecg = normalize(ecg_signal)
+    except Exception as e:
+        logging.error(f"Error normalizing data: {e}")
+        normalized_ecg = ecg_signal
 
     # remove noise
-    denoised_ecg = apply_filter(normalized_ecg)
+    try:
+        denoised_ecg = apply_filter(normalized_ecg)
+    except Exception as e:
+        logging.error(f"Error filtering data: {e}")
+        denoised_ecg = normalized_ecg
+
     
     # TODO remove artifacts
 
     # extract rr peaks
     rr_peaks = rr_peaks_from_ecg_signal(denoised_ecg, sampling_freq)
+
+    if len(rr_peaks) < 10:
+        raise Exception(f"Cannot compute RR Peaks. Insuficient data for calculation: {len(rr_peaks)}")
 
     # extract metrics
     metrics = apply_metrics(rr_peaks, normalized_ecg)
@@ -78,7 +94,7 @@ def process_all_ecg() -> pd.DataFrame:
 
     # applying functions in all files
     for filename in training_dir.iterdir():
-        print(f"Processing: {filename.name}...")
+        logging.debug(f"Processing: {filename.name}...")
         if filename.suffix == ".mat":
             ecg_signal = load_ecg(filename)
             target = get_target(filename.stem)
@@ -86,7 +102,7 @@ def process_all_ecg() -> pd.DataFrame:
                 processed_data = np.append(pipeline(ecg_signal), target)
                 data.append(processed_data)
             except Exception as e:
-                print(e)
+                logger.debug(e)
                 continue
 
     return np.array(data)
