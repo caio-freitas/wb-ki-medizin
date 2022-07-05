@@ -12,6 +12,18 @@ from wettbewerb import load_references
     # why is not processing train_ecg_05610?
     # Invalid data type. Please provide data in int, float, list or numpy array format.
 
+import logging
+
+# Create and configure logger
+logging.basicConfig(filename="logfile.log",
+                    format='%(asctime)s %(message)s',
+                    filemode='w')
+ 
+# Creating an object
+logger = logging.getLogger("meu_log")
+ 
+# Setting the threshold of logger to DEBUG
+logger.setLevel(logging.DEBUG)
 
 def process_training_set() -> pd.DataFrame:
 
@@ -20,7 +32,7 @@ def process_training_set() -> pd.DataFrame:
     labels = []
 
     for idx, ecg_lead in enumerate(ecg_leads):
-        print(f"Processing {ecg_names[idx]}...")
+        logger.debug(f"Processing {ecg_names[idx]}...")
         try:
             feature = pipeline(ecg_lead, fs)
             features.append(feature)
