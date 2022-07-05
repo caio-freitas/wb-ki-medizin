@@ -59,12 +59,9 @@ def apply_metrics(peaks: np.array, signal: np.array) -> pd.DataFrame:
     except Exception as e:
         logger.debug("Cannot calculate Heart rate\nError: {e}")
         hrp = np.array([0])
-
-    try:
-        [LF_power, HF_power, ratio] = spectral_powers(signal)
-    except Exception as e:
-        logger.debug("Cannot calculate Spectral Powers\nError: {e}")
-        [LF_power, HF_power, ratio] = [0, 0, 0]
+        
+    [LF_power, HF_power, ratio] = spectral_powers(signal)
+    
 
 
     return np.array([

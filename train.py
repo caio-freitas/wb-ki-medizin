@@ -3,6 +3,7 @@ import joblib
 import pandas as pd
 
 from lightgbm import LGBMClassifier
+from imblearn.over_sampling import SMOTE
 
 from preprocessing import pipeline
 from preprocessing.metrics import feature_names
@@ -25,6 +26,19 @@ logger = logging.getLogger("meu_log")
 # Setting the threshold of logger to DEBUG
 logger.setLevel(logging.DEBUG)
 
+def oversampling(df):
+    cols = df.columns
+    y = df[['label']]
+    X = df.drop("label", axis=1)
+    oversample = SMOTE()
+
+    X, y = oversample.fit_resample(X, y)
+
+    df = pd.concat([X, y], axis=1)
+    assert all(df.columns == cols)
+
+    return df
+
 def process_training_set() -> pd.DataFrame:
 
     ecg_leads, ecg_labels, fs, ecg_names = load_references() # Importiere EKG-Dateien, zugehörige Diagnose, Sampling-Frequenz (Hz) und Name 
@@ -45,6 +59,8 @@ def process_training_set() -> pd.DataFrame:
     df = pd.DataFrame(features, columns=feature_names)
     s = pd.Series(labels, name="label")
     df = pd.concat([df, s], axis=1)
+
+    df = oversampling(df)
 
     return df
 
@@ -95,7 +111,7 @@ def main():
 
     train_binary(df)
     train_multilabel(df)
-    
+
 
 if __name__ == "__main__":
     main()

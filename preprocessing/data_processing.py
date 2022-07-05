@@ -53,7 +53,6 @@ def pipeline(ecg_signal: np.array, sampling_freq: Union[int, float] = 300) -> np
     except Exception as e:
         logging.error(f"Error filtering data: {e}")
         denoised_ecg = normalized_ecg
-
     
     # TODO remove artifacts
 
