@@ -6,6 +6,7 @@ from utils import load_ecg, get_target
 from .filtering import apply_filter
 from .metrics import apply_metrics
 from typing import Union
+from scipy.io import savemat
 
 import logging
 # Create and configure logger
@@ -23,6 +24,19 @@ def rr_peaks_from_ecg_signal(ecg_signal: pd.Series, sampling_freq=300) -> np.arr
     rr = np.diff(r_peaks / 1000) # in seconds
     return rr
 
+def add_noise(signal: pd.Series, std: float):
+    '''Adds white gaussian noise of standar deviation std to signal
+    '''
+    noise = np.random.normal(0, std, signal.shape)
+    return signal + noise
+    
+def generate_noisy_signals(original_signal: pd.Series, n: int, std: float):
+    '''Creates multiple .mat files with random addition of noise on top of
+    the original signal
+    ''' 
+    for i in range(n):
+        noisy_signal = add_noise(ecg_signal, std)
+        savemat(f"gen_{time.time()}.mat", {"val": [noisy_signal]})
 
 def normalize(ecg_signal: np.array) -> np.array:
     """"Normalice de an ECG
