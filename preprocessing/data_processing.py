@@ -6,10 +6,11 @@ from .filtering import apply_filter
 from .metrics import apply_metrics
 from typing import Union
 from scipy.io import savemat
+import time
 
 import logging
 # Create and configure logger
-logger = logging.getLogger("meu_log")
+logger = logging.getLogger("main_log")
 
 
 def add_noise(signal: pd.Series, std: float):
@@ -23,7 +24,7 @@ def generate_noisy_signals(original_signal: pd.Series, n: int, std: float):
     the original signal
     ''' 
     for i in range(n):
-        noisy_signal = add_noise(ecg_signal, std)
+        noisy_signal = add_noise(original_signal, std)
         savemat(f"gen_{time.time()}.mat", {"val": [noisy_signal]})
 
 def normalize(ecg_signal: np.array) -> np.array:
@@ -46,14 +47,14 @@ def pipeline(ecg_signal: np.array, sampling_freq: Union[int, float] = 300) -> np
     try:
         normalized_ecg = normalize(ecg_signal)
     except Exception as e:
-        logging.error(f"Error normalizing data: {e}")
+        logger.error(f"Error normalizing data: {e}")
         normalized_ecg = ecg_signal
 
     # remove noise
     try:
         denoised_ecg = apply_filter(normalized_ecg)
     except Exception as e:
-        logging.error(f"Error filtering data: {e}")
+        logger.error(f"Error filtering data: {e}")
         denoised_ecg = normalized_ecg
     
     # TODO remove artifacts
@@ -75,7 +76,7 @@ def process_all_ecg() -> pd.DataFrame:
 
     # applying functions in all files
     for filename in training_dir.iterdir():
-        logging.debug(f"Processing: {filename.name}...")
+        logger.debug(f"Processing: {filename.name}...")
         if filename.suffix == ".mat":
             ecg_signal = load_ecg(filename)
             target = get_target(filename.stem)

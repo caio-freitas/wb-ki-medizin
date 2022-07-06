@@ -6,7 +6,7 @@ from pyhrv.time_domain import sdnn, sdann, nn50, sdsd, tinn, rmssd
 from typing import Union
 
 import logging
-logger = logging.getLogger("meu_log")
+logger = logging.getLogger("main_log")
 
 feature_names = [
     "min_rate",
@@ -67,11 +67,15 @@ def apply_metrics(signal: np.array, sampling_freq: Union[int, float]) -> pd.Data
     * r-MSSD: The square root of the mean of the squares of differences between adjacent RR intervals
 
     **** add/remove new metrics also in csv_export() at utils.py
-
+    
     """
 
     # extract rr peaks
     rr_peaks, hrp = rr_hr_from_ecg_signal(signal, sampling_freq)
+    
+    if not hrp.any():
+        logger.warning("Heart rate array is empty! Replacing with 0")
+        hrp = np.array([0])
     
     [LF_power, HF_power, ratio] = spectral_powers(signal)
     

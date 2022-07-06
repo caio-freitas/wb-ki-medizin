@@ -15,7 +15,8 @@ from wettbewerb import load_references
 
 import logging
 
-
+# Creating an object
+logger = logging.getLogger("main_log")
 
 def oversampling(df):
     cols = df.columns
@@ -41,11 +42,13 @@ def process_training_set() -> pd.DataFrame:
         try:
             feature = pipeline(ecg_lead, fs)
             features.append(feature)
-
+            
             label = ecg_labels[idx]
             labels.append(label)
         except Exception as e:
-            print(e)
+            logger.error(f"Error running pipeline: {e}")
+        
+        
 
     df = pd.DataFrame(features, columns=feature_names)
     s = pd.Series(labels, name="label")
@@ -94,17 +97,15 @@ def train(X_train, y_train, model, model_name):
 
 
 def main():
+    global logger
     # Create and configure logger
     logging.basicConfig(filename="logfile.log",
                         format='%(asctime)s %(message)s',
                         filemode='w')
     
-    # Creating an object
-    logger = logging.getLogger("main_log")
-    
     # Setting the threshold of logger to DEBUG
     logger.setLevel(logging.DEBUG)
-    
+
     if not (pathlib.Path(__file__).parent / "features.csv").exists():
         df = process_training_set()
         df.to_csv("features.csv", index=False)
