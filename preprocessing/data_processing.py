@@ -1,7 +1,6 @@
 import pathlib
 import numpy as np
 import pandas as pd
-from biosppy.signals import ecg
 from utils import load_ecg, get_target
 from .filtering import apply_filter
 from .metrics import apply_metrics
@@ -12,17 +11,6 @@ import logging
 # Create and configure logger
 logger = logging.getLogger("meu_log")
 
-def rr_peaks_from_ecg_signal(ecg_signal: pd.Series, sampling_freq=300) -> np.array:
-    """Given an ECG signal function gets the RR peaks
-    :param ecg_signal: ECG signal
-    :param sampling_freq: sampling frequency
-    :return: array with peak positions
-    """
-    fs = 300 # Sampling frequency (Hz)
-    signal, r_peaks = ecg.ecg(ecg_signal, show=False, sampling_rate=sampling_freq)[1:3]
-
-    rr = np.diff(r_peaks / 1000) # in seconds
-    return rr
 
 def add_noise(signal: pd.Series, std: float):
     '''Adds white gaussian noise of standar deviation std to signal
@@ -70,14 +58,8 @@ def pipeline(ecg_signal: np.array, sampling_freq: Union[int, float] = 300) -> np
     
     # TODO remove artifacts
 
-    # extract rr peaks
-    rr_peaks = rr_peaks_from_ecg_signal(denoised_ecg, sampling_freq)
-
-    if len(rr_peaks) < 10:
-        raise Exception(f"Cannot compute RR Peaks. Insuficient data for calculation: {len(rr_peaks)}")
-
     # extract metrics
-    metrics = apply_metrics(rr_peaks, normalized_ecg)
+    metrics = apply_metrics(normalized_ecg, sampling_freq)
 
     return metrics
 

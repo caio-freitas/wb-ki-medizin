@@ -1,14 +1,15 @@
 import scipy
 import numpy as np
 import pandas as pd
+from biosppy.signals import ecg
 from pyhrv.time_domain import sdnn, sdann, nn50, sdsd, tinn, rmssd
-from pyhrv.tools import heart_rate
+from typing import Union
 
 import logging
 logger = logging.getLogger("meu_log")
 
 feature_names = [
-    "min_rate", 
+    "min_rate",
     "avg_rate", 
     "std_rate",
     "max_rate", 
@@ -22,6 +23,20 @@ feature_names = [
 ]
 
 col_names = feature_names + ["label"]
+
+def rr_hr_from_ecg_signal(ecg_signal: pd.Series, sampling_freq=300) -> np.array:
+    """Given an ECG signal function gets the RR peaks
+    :param ecg_signal: ECG signal
+    :param sampling_freq: sampling frequency
+    :return: array with peak positions
+    """
+    fs = 300 # Sampling frequency (Hz)
+    ecg_proc = ecg.ecg(ecg_signal, show=False, sampling_rate=sampling_freq)
+    signal, r_peaks = ecg_proc[1:3]
+    heart_rate = ecg_proc[6]
+
+    rr = np.diff(r_peaks / 1000) # in seconds
+    return rr, heart_rate
 
 def spectral_powers(signal: np.array, LF: np.array = [0.05, 0.15], HF: np.array = [0.15, 0.4]):
     psd_f, psd = scipy.signal.welch(signal) # power spectral density
@@ -39,7 +54,7 @@ def spectral_powers(signal: np.array, LF: np.array = [0.05, 0.15], HF: np.array 
 
     return LF_power/total_power, HF_power/total_power, LF_power/HF_power
 
-def apply_metrics(peaks: np.array, signal: np.array) -> pd.DataFrame:
+def apply_metrics(signal: np.array, sampling_freq: Union[int, float]) -> pd.DataFrame:
     """Given the RR peaks array, returns a DataFrame
     with all features of interess
     
@@ -54,27 +69,23 @@ def apply_metrics(peaks: np.array, signal: np.array) -> pd.DataFrame:
     **** add/remove new metrics also in csv_export() at utils.py
 
     """
-    try:
-        hrp = heart_rate(peaks)
-    except Exception as e:
-        logger.debug("Cannot calculate Heart rate\nError: {e}")
-        hrp = np.array([0])
-        
+
+    # extract rr peaks
+    rr_peaks, hrp = rr_hr_from_ecg_signal(signal, sampling_freq)
+    
     [LF_power, HF_power, ratio] = spectral_powers(signal)
     
-
-
     return np.array([
         hrp.min(),
         hrp.mean(),
         hrp.std(),
         hrp.max(),
-        sdnn(peaks)["sdnn"],
-        #sdann(peaks)["sdann"], # warnings.warn("Signal duration too short for SDANN computation.")
-        nn50(peaks)["nn50"],
-        sdsd(peaks)["sdsd"],
-        #tinn(peaks, plot=False)["tinn"], # warnings.warn('CAUTION: The TINN computation is currently providing incorrect results in the most cases due to a 
-        rmssd(peaks)["rmssd"],
+        sdnn(rr_peaks)["sdnn"],
+        #sdann(rr_peaks)["sdann"], # warnings.warn("Signal duration too short for SDANN computation.")
+        nn50(rr_peaks)["nn50"],
+        sdsd(rr_peaks)["sdsd"],
+        #tinn(rr_peaks, plot=False)["tinn"], # warnings.warn('CAUTION: The TINN computation is currently providing incorrect results in the most cases due to a 
+        rmssd(rr_peaks)["rmssd"],
         LF_power,
         HF_power,
         ratio
