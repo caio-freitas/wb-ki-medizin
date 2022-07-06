@@ -15,16 +15,7 @@ from wettbewerb import load_references
 
 import logging
 
-# Create and configure logger
-logging.basicConfig(filename="logfile.log",
-                    format='%(asctime)s %(message)s',
-                    filemode='w')
- 
-# Creating an object
-logger = logging.getLogger("meu_log")
- 
-# Setting the threshold of logger to DEBUG
-logger.setLevel(logging.DEBUG)
+
 
 def oversampling(df):
     cols = df.columns
@@ -103,6 +94,17 @@ def train(X_train, y_train, model, model_name):
 
 
 def main():
+    # Create and configure logger
+    logging.basicConfig(filename="logfile.log",
+                        format='%(asctime)s %(message)s',
+                        filemode='w')
+    
+    # Creating an object
+    logger = logging.getLogger("main_log")
+    
+    # Setting the threshold of logger to DEBUG
+    logger.setLevel(logging.DEBUG)
+    
     if not (pathlib.Path(__file__).parent / "features.csv").exists():
         df = process_training_set()
         df.to_csv("features.csv", index=False)
