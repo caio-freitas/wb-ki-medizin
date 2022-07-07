@@ -9,6 +9,7 @@ import logging
 logger = logging.getLogger("main_log")
 
 feature_names = [
+    "rr_peaks_count",
     "min_rate",
     "avg_rate", 
     "std_rate",
@@ -66,7 +67,7 @@ def apply_metrics(signal: np.array, sampling_freq: Union[int, float]) -> pd.Data
     * TINN: Baseline width of the triangular interpolation of the intervals histogram
     * r-MSSD: The square root of the mean of the squares of differences between adjacent RR intervals
 
-    **** add/remove new metrics also in csv_export() at utils.py
+    **** add/remove new metrics also in feature_names (begining of this file)
     
     """
 
@@ -80,6 +81,7 @@ def apply_metrics(signal: np.array, sampling_freq: Union[int, float]) -> pd.Data
     [LF_power, HF_power, ratio] = spectral_powers(signal)
     
     return np.array([
+        hrp.size,
         hrp.min(),
         hrp.mean(),
         hrp.std(),
