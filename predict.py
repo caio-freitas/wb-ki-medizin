@@ -55,10 +55,10 @@ def predict_labels(
 
     if is_binary_classifier:
         # loads binary model
-        model = joblib.load(model_name + '_binary.pkl')
+        model = joblib.load("models/" + model_name + '_binary.pkl')
     else:
         # Loads multilabel model and file to be predicted
-        model = joblib.load(model_name + '.pkl')
+        model = joblib.load("models/" + model_name + '.pkl')
         
 
     # predict data
