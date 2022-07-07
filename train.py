@@ -38,7 +38,7 @@ def process_training_set() -> pd.DataFrame:
     labels = []
 
     for idx, ecg_lead in enumerate(ecg_leads):
-        logger.debug(f"Processing {ecg_names[idx]}...")
+        logger.info(f"Processing {ecg_names[idx]}...")
         try:
             feature = pipeline(ecg_lead, fs)
             features.append(feature)
@@ -72,7 +72,7 @@ def train_multilabel(df: pd.DataFrame) -> None:
     
     train(X_train, y_train, model, model_name)
 
-    print(f"Saved model {model_name}")
+    logger.info(f"Saved model {model_name}")
 
 def train_binary(df: pd.DataFrame) -> None:
     model_name = 'international_CO1_binary.pkl'
@@ -87,7 +87,7 @@ def train_binary(df: pd.DataFrame) -> None:
     )
 
     train(X_train, y_train, model, model_name)
-    print(f"Saved model {model_name}")
+    logger.info(f"Saved model {model_name}")
     
 
 def train(X_train, y_train, model, model_name):

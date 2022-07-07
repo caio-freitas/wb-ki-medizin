@@ -4,6 +4,10 @@ import pandas as pd
 from preprocessing import pipeline
 from typing import List, Tuple
 
+import logging
+
+logger = logging.getLogger("main_log")
+
 def predict_labels(
     ecg_leads : List[np.ndarray], 
     fs : float, 
@@ -32,14 +36,14 @@ def predict_labels(
         ecg_name und eure Diagnose
     '''
 
-#------------------------------------------------------------------------------
-# Euer Code ab hier  
+    #------------------------------------------------------------------------------
+    # Euer Code ab hier  
     predictions = []
     data = []
 
     # process data
     for idx, ecg_lead in enumerate(ecg_leads):
-        print(f"Processing {ecg_names[idx]}")
+        logger.info(f"Processing {ecg_names[idx]}")
         processed_data = pipeline(ecg_signal=ecg_lead, sampling_freq=fs)
         data.append(processed_data)
 
