@@ -62,11 +62,13 @@ def frequency_domain_features(signal: np.array, LF: np.array = [0.05, 0.15], HF:
     LF_power = np.trapz(psd_lf, psd_f_lf) # low frequency band
     HF_power = np.trapz(psd_hf, psd_f_hf) # high frequency band
 
-    return [LF_power/total_power,
+    f = [LF_power/total_power,
             HF_power/total_power,
             LF_power/HF_power,
             LF_power/(LF_power + HF_power),
             HF_power/(LF_power + HF_power)]
+    print(f)
+    return f
 
 def time_domain_features(signal: np.array, sampling_freq: Union[int, float]):
     # extract rr peaks
@@ -116,8 +118,6 @@ def apply_metrics(signal: np.array, sampling_freq: Union[int, float]) -> pd.Data
     **** add/remove new metrics also in feature_names (begining of this file)
     
     """
-    
-    [LF_power, HF_power, ratio] = frequency_domain_features(signal)
     
     return np.concatenate([
         time_domain_features(signal, sampling_freq),
