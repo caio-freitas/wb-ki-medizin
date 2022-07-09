@@ -2,7 +2,7 @@ import scipy
 import numpy as np
 import pandas as pd
 from biosppy.signals import ecg
-from pyhrv.time_domain import sdnn, sdann, nn50, sdsd, tinn, rmssd
+from pyhrv.time_domain import sdnn, nn50, sdsd, rmssd
 from typing import Union
 
 import logging
@@ -58,7 +58,7 @@ def spectral_powers(signal: np.array, LF: np.array = [0.05, 0.15], HF: np.array 
 def apply_metrics(signal: np.array, sampling_freq: Union[int, float]) -> pd.DataFrame:
     """Given the RR peaks array, returns a DataFrame
     with all features of interess
-    
+
     * heart_rate: Heart rate
     * SDNN: Standard deviation of RR intervals series
     * SDANN: Standard deviation of the mean of RR intervals in 5-min segments
@@ -87,10 +87,8 @@ def apply_metrics(signal: np.array, sampling_freq: Union[int, float]) -> pd.Data
         hrp.std(),
         hrp.max(),
         sdnn(rr_peaks)["sdnn"],
-        #sdann(rr_peaks)["sdann"], # warnings.warn("Signal duration too short for SDANN computation.")
         nn50(rr_peaks)["nn50"],
         sdsd(rr_peaks)["sdsd"],
-        #tinn(rr_peaks, plot=False)["tinn"], # warnings.warn('CAUTION: The TINN computation is currently providing incorrect results in the most cases due to a 
         rmssd(rr_peaks)["rmssd"],
         LF_power,
         HF_power,

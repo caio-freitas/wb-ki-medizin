@@ -27,7 +27,6 @@ if __name__ == '__main__':
     # Setting the threshold of logger to DEBUG
     logger.setLevel(logging.DEBUG)
 
-
     parser = argparse.ArgumentParser(description='Predict given Model')
     parser.add_argument('--test_dir', action='store', type=str, default='../test/')
     parser.add_argument('--model_name', action='store', type=str, default='international_CO1')

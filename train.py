@@ -1,5 +1,6 @@
 import pathlib
 import joblib
+import logging
 import pandas as pd
 
 from lightgbm import LGBMClassifier
@@ -9,13 +10,7 @@ from preprocessing import pipeline
 from preprocessing.metrics import feature_names
 from wettbewerb import load_references
 
-# TODO 
-    # why is not processing train_ecg_05610?
-    # Invalid data type. Please provide data in int, float, list or numpy array format.
-
-import logging
-
-# Creating an object
+# Creating logger object
 logger = logging.getLogger("main_log")
 
 def oversampling(df):
@@ -93,7 +88,7 @@ def train_binary(df: pd.DataFrame) -> None:
 def train(X_train, y_train, model, model_name):
     model.fit(X_train, y_train)
 
-    joblib.dump(model, model_name)
+    joblib.dump(model, "models/" + model_name)
 
 
 def main():

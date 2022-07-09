@@ -1,1 +1,1 @@
-from .data_processing import process_all_ecg, pipeline
+from .data_processing import pipeline
