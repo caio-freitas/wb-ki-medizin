@@ -4,6 +4,7 @@ import pandas as pd
 from biosppy.signals import ecg
 from pyhrv.time_domain import sdnn, nn50, sdsd, rmssd
 from typing import Union
+import neurokit2 as nk
 
 import logging
 logger = logging.getLogger("main_log")
@@ -14,13 +15,20 @@ feature_names = [
     "avg_rate", 
     "std_rate",
     "max_rate", 
+    "mRR",
+    "minRR",
+    "maxRR",
+    "medRR",
     "sdnn", 
-    "nn50", 
+    "nn50",
+    "pnn50", 
     "sdsd", 
     "rmssd", 
     "low_freq_power_perc", 
     "high_freq_power_perc", 
-    "freq_power_ratio"
+    "ratio_LH",
+    "LFn",
+    "HFn"
 ]
 
 col_names = feature_names + ["label"]
@@ -39,7 +47,8 @@ def rr_hr_from_ecg_signal(ecg_signal: pd.Series, sampling_freq=300) -> np.array:
     rr = np.diff(r_peaks / 1000) # in seconds
     return rr, heart_rate
 
-def spectral_powers(signal: np.array, LF: np.array = [0.05, 0.15], HF: np.array = [0.15, 0.4]):
+
+def frequency_domain_features(signal: np.array, LF: np.array = [0.05, 0.15], HF: np.array = [0.15, 0.4]):
     psd_f, psd = scipy.signal.welch(signal) # power spectral density
 
     psd_f_lf = psd_f[(psd_f > LF[0]) & (psd_f <= LF[1])]
@@ -53,13 +62,50 @@ def spectral_powers(signal: np.array, LF: np.array = [0.05, 0.15], HF: np.array 
     LF_power = np.trapz(psd_lf, psd_f_lf) # low frequency band
     HF_power = np.trapz(psd_hf, psd_f_hf) # high frequency band
 
-    return LF_power/total_power, HF_power/total_power, LF_power/HF_power
+    return [LF_power/total_power,
+            HF_power/total_power,
+            LF_power/HF_power,
+            LF_power/(LF_power + HF_power),
+            HF_power/(LF_power + HF_power)]
+
+def time_domain_features(signal: np.array, sampling_freq: Union[int, float]):
+    # extract rr peaks
+    rr_peaks, hrp = rr_hr_from_ecg_signal(signal, sampling_freq)
+    
+        
+    if not hrp.any():
+        logger.warning("Heart rate array is empty! Replacing with 0")
+        hrp = np.array([0])
+
+    NN50 = nn50(rr_peaks)["nn50"]
+    if len(rr_peaks) != 0:
+        pNN50 = NN50/len(rr_peaks)
+    else:
+        pNN50 = 0
+
+    return [
+        hrp.size,
+        hrp.min(),
+        hrp.mean(),
+        hrp.std(),
+        hrp.max(),
+        rr_peaks.mean()/sampling_freq,
+        rr_peaks.min()/sampling_freq,
+        rr_peaks.max()/sampling_freq,
+        np.median(rr_peaks)/sampling_freq,
+        sdnn(rr_peaks)["sdnn"],
+        NN50,
+        pNN50,
+        sdsd(rr_peaks)["sdsd"],
+        rmssd(rr_peaks)["rmssd"]]
+
 
 def apply_metrics(signal: np.array, sampling_freq: Union[int, float]) -> pd.DataFrame:
     """Given the RR peaks array, returns a DataFrame
     with all features of interess
 
     * heart_rate: Heart rate
+    * mRR
     * SDNN: Standard deviation of RR intervals series
     * SDANN: Standard deviation of the mean of RR intervals in 5-min segments
     * pNN50: Proportion of adjacent RR intervals differing by more than 50 ms
@@ -70,27 +116,10 @@ def apply_metrics(signal: np.array, sampling_freq: Union[int, float]) -> pd.Data
     **** add/remove new metrics also in feature_names (begining of this file)
     
     """
-
-    # extract rr peaks
-    rr_peaks, hrp = rr_hr_from_ecg_signal(signal, sampling_freq)
     
-    if not hrp.any():
-        logger.warning("Heart rate array is empty! Replacing with 0")
-        hrp = np.array([0])
+    [LF_power, HF_power, ratio] = frequency_domain_features(signal)
     
-    [LF_power, HF_power, ratio] = spectral_powers(signal)
-    
-    return np.array([
-        hrp.size,
-        hrp.min(),
-        hrp.mean(),
-        hrp.std(),
-        hrp.max(),
-        sdnn(rr_peaks)["sdnn"],
-        nn50(rr_peaks)["nn50"],
-        sdsd(rr_peaks)["sdsd"],
-        rmssd(rr_peaks)["rmssd"],
-        LF_power,
-        HF_power,
-        ratio
-    ])
+    return np.concatenate([
+        time_domain_features(signal, sampling_freq),
+        frequency_domain_features(signal)
+    ], axis=0)
