@@ -16,20 +16,7 @@ def load_ecg(filepath: pathlib.Path) -> pd.Series:
 
 def get_target(filenamestem: str):
     repo_dir = pathlib.Path(__file__).parent
-    training_dir = repo_dir / "training/"
+    training_dir = repo_dir / "../training/"
     reference_df = pd.read_csv(training_dir / "REFERENCE.csv", names=["filename", "label"])
     return reference_df[reference_df["filename"] == filenamestem]["label"].values[0]
-
-
-def csv_export(data: np.array, path: pathlib.Path = None, name: str = None, cols: List[str] = None) -> None:
-    """Export numpy array as CSV
-    :param data: array to be exported
-    :param path: path to be exported
-    :param name: name of the file
-    """
-    
-    df = pd.DataFrame(data, columns=cols)
-    df.to_csv(path / name, index=False)
-    # new_name = (get_target(name[:-4]) + "_" + name)
-    # pd.Series(data).to_csv(path / new_name, index=False)
 
