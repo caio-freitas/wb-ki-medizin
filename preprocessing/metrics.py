@@ -66,7 +66,7 @@ def frequency_domain_features(signal: np.array, LF: np.array = [0.05, 0.15], HF:
             LF_power/HF_power,
             LF_power/(LF_power + HF_power),
             HF_power/(LF_power + HF_power)]
-            
+    print(f)
     return f
 
 def time_domain_features(signal: np.array, sampling_freq: Union[int, float]):
