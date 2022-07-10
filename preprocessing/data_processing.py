@@ -7,7 +7,7 @@ from .metrics import apply_metrics
 from typing import Union
 from scipy.io import savemat
 import time
-
+import cleam_extrems as ce
 import logging
 # Create and configure logger
 logger = logging.getLogger("main_log")
@@ -43,6 +43,15 @@ def pipeline(ecg_signal: np.array, sampling_freq: Union[int, float] = 300) -> np
     :param sampling_freq: Sampling frequency
     :return: array with features of processed signal
     """
+    #filter high amplitude
+    try:
+        filter_h_a_signal = ce.filter_h_a(ecg_signal):
+    except Exception as e:
+        logger.error(f"Error high amplitude data: {e}")
+        filter_h_a_signal = ecg_signal  
+    
+    
+    
     # normalize data
     try:
         normalized_ecg = normalize(ecg_signal)
