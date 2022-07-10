@@ -4,7 +4,6 @@ import pandas as pd
 from biosppy.signals import ecg
 from pyhrv.time_domain import sdnn, nn50, sdsd, rmssd
 from typing import Union
-import neurokit2 as nk
 
 import logging
 logger = logging.getLogger("main_log")
